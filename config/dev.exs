@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :expense_tracker, ExpenseTracker.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "password",
   hostname: "localhost",
   database: "expense_tracker_dev",
   stacktrace: true,
