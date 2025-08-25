@@ -1,7 +1,7 @@
 defmodule ExpenseTracker.Account.Expense do
+  alias ExpenseTracker.Account
   alias ExpenseTracker.Repo
   alias ExpenseTracker.Account.Expense
-  alias ExpenseTracker.Account.Category
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -16,36 +16,36 @@ defmodule ExpenseTracker.Account.Expense do
     timestamps(type: :utc_datetime)
   end  
 
-  def changeset(expense,%Category{} = category,attrs) do
+  def changeset(expense,attrs) do
     expense
-    |> cast(attrs,[:amount,:date,:notes])
-    |> put_change(:category_id,category.id)
+    |> cast(attrs,[:amount,:date,:notes,:category_id])
     |> validate_required([:amount,:date,:category_id])
-    |> normalize_amount(:amount,category.currency_offset)
     |> validate_number(:amount, greater_than: 0,less_than_or_equal_to: 1_000_000)
-    |> validate_budget_constraint(category)
+    |> validate_budget()
     |> foreign_key_constraint(:category_id)
   end
 
   defp normalize_amount(changeset,field,offset) do
-    case get_field(changeset,field,:missing) do
-      :missing -> changeset
+    case get_field(changeset,field) do
+      nil -> changeset
       val -> put_change(changeset,field,offset * val)
     end
   end
 
-  defp validate_budget_constraint(changeset,cat = %Category{}) do
+  defp validate_budget_constraint(changeset,cat) do
+    changeset = normalize_amount(changeset,:amount,cat.currency_offset)
     last_date = get_change(changeset,:date)
-    case last_date do
-      nil -> changeset
-      last_date -> 
+    amt = get_change(changeset,:amount) 
+    case {last_date,amt} do
+      {nil,_} -> changeset
+      {_,nil} -> changeset
+      {last_date,amt} -> 
         start_date = Date.beginning_of_month(last_date)
         query = from e in Expense,
           where: e.category_id == ^cat.id and e.date >= ^start_date and e.date <= ^last_date,
           select: sum(e.amount)
         total = Repo.one(query) || 0
 
-        amt = get_change(changeset,:amount)
         # TODO adjust amount with offset in error message
         if total + amt > cat.monthly_budget do
           add_error(changeset,:amount,"Amount excedes budget by #{total + amt - cat.monthly_budget}")
@@ -56,7 +56,15 @@ defmodule ExpenseTracker.Account.Expense do
     end
           
   end
-
+  
+  defp validate_budget(changeset) do
+    category_id = get_change(changeset,:category_id)
+    if category_id !== nil do
+      validate_budget_constraint(changeset,Account.get_category!(category_id))
+    else
+      changeset
+    end
+  end
 
   
 end

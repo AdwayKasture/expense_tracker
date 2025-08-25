@@ -19,6 +19,7 @@ defmodule ExpenseTracker.Account.Category do
     |> validate_required([:name,:monthly_budget])
     |> normalize_amount(:monthly_budget)
     |> validate_number(:monthly_budget, greater_than: 0,less_than_or_equal_to: 1_000_000)
+    |> unique_constraint(:name)
 
   end
 

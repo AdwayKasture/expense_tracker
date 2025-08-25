@@ -1,4 +1,5 @@
 defmodule ExpenseTrackerWeb.ExpenseLive.Form do
+alias Ecto.Changeset
 alias ExpenseTracker.Account
 alias ExpenseTracker.Account.Expense
   use ExpenseTrackerWeb,:live_view
@@ -36,7 +37,7 @@ alias ExpenseTracker.Account.Expense
   def mount(params, _session, socket) do
 
     category_opts = Account.list_categories()
-    |>Enum.map(fn cat -> {cat.id,cat.name} end)
+    |>Enum.map(fn cat -> {cat.name,cat.id} end)
 
     {:ok,
      socket
@@ -50,12 +51,13 @@ alias ExpenseTracker.Account.Expense
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     expense = Account.get_expense!(id)
+    category = Account.get_category!(expense.category_id)
 
     socket
     |> assign(:page_title, "Edit Expense")
     |> assign(:expense, expense)
-    |> assign(selected_category: Account.get_category!(expense.category_id))
-    |> assign(:form, to_form(Account.change_expense(expense)))
+    |> assign(selected_category: category)
+    |> assign(:form, to_form(Account.change_expense(expense,category)))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -70,7 +72,14 @@ alias ExpenseTracker.Account.Expense
 
   @impl true
   def handle_event("validate", %{"expense" => expense_params}, socket) do
-    changeset = Account.change_expense(socket.assigns.expense, expense_params)
+
+    expense_params = case Map.get(expense_params,"category_id") do
+      nil -> expense_params
+      [id] ->  %{expense_params|"category_id" =>String.to_integer(id)}
+    end
+
+    changeset = Account.change_expense(socket.assigns.expense,expense_params )
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -79,6 +88,13 @@ alias ExpenseTracker.Account.Expense
   end
 
   defp save_expense(socket, :edit, expense_params) do
+
+    expense_params = case Map.get(expense_params,"category_id") do
+      nil -> expense_params
+      [id] ->  %{expense_params|"category_id" =>String.to_integer(id)}
+    end
+
+
     case Account.update_expense(socket.assigns.expense, expense_params) do
       {:ok, expense} ->
         {:noreply,
@@ -92,6 +108,12 @@ alias ExpenseTracker.Account.Expense
   end
 
   defp save_expense(socket, :new, expense_params) do
+
+    expense_params = case Map.get(expense_params,"category_id") do
+      nil -> expense_params
+      [id] ->  %{expense_params|"category_id" =>String.to_integer(id)}
+    end
+
     case Account.create_expense(expense_params) do
       {:ok, expense} ->
         {:noreply,

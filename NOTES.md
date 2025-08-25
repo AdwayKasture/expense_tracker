@@ -23,4 +23,5 @@ Ok first thing i need to decide is the database schema
 
 tests for expenses
 review ecto types, length validation on desc
-
+category name must also be  unique
+change @impl true => @impl LiveView
