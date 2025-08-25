@@ -13,7 +13,7 @@ defmodule ExpenseTracker.Account.Expense do
     
     belongs_to :category, ExpenseTracker.Account.Category
     
-    timestamps()
+    timestamps(type: :utc_datetime)
   end  
 
   def changeset(expense,%Category{} = category,attrs) do
@@ -24,6 +24,7 @@ defmodule ExpenseTracker.Account.Expense do
     |> normalize_amount(:amount,category.currency_offset)
     |> validate_number(:amount, greater_than: 0,less_than_or_equal_to: 1_000_000)
     |> validate_budget_constraint(category)
+    |> foreign_key_constraint(:category_id)
   end
 
   defp normalize_amount(changeset,field,offset) do

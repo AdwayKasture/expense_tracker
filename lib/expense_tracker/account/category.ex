@@ -10,7 +10,7 @@ defmodule ExpenseTracker.Account.Category do
     field :monthly_budget,:integer
     field :currency_offset,:integer,default: @currency_offset
     
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
   
   def changeset(category,attrs) do

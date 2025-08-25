@@ -14,6 +14,9 @@ Ok first thing i need to decide is the database schema
     Adding more constraint on amount and monthly_budget must be > 0 and less than 10_000 (assumption)
 
 
+# when creating crud for expenses user can select expense from drop down
+
+# for real time update of list , we will use PubSub , where the liveview will listen to successful capture of expense and update the list accordingly
 
 
 # TODO
