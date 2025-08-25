@@ -24,12 +24,15 @@ defmodule ExpenseTracker.Account.Category do
   end
 
   def normalize_amount(changeset,field) do
+    if not changed?(changeset,field) do
+      changeset
+    else
       offset = get_change(changeset,:currency_offset,@currency_offset)
       case get_change(changeset,field,:missing) do
         :missing -> changeset
         val -> put_change(changeset,field,offset * val ) 
       end
-      
+    end
   end
 
 end

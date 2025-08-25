@@ -17,7 +17,6 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
         <.input field={@form[:monthly_budget]} type="number" label="Monthly budget" />
-        <.input field={@form[:currency_offset]} type="number" label="Currency offset" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Category</.button>
           <.button navigate={return_path(@return_to, @category)}>Cancel</.button>

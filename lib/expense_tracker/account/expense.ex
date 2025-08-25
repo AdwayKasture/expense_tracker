@@ -26,9 +26,14 @@ defmodule ExpenseTracker.Account.Expense do
   end
 
   defp normalize_amount(changeset,field,offset) do
-    case get_field(changeset,field) do
-      nil -> changeset
-      val -> put_change(changeset,field,offset * val)
+    if not changed?(changeset,field) and not changed?(changeset,:category_id) do
+      changeset
+    else
+      case get_field(changeset,field) do
+        nil -> changeset
+        val -> put_change(changeset,field,offset * val)
+      end
+
     end
   end
 
