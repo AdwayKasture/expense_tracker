@@ -1,7 +1,6 @@
 defmodule ExpenseTrackerWeb.ExpenseLive.Form do
-alias Ecto.Changeset
-alias ExpenseTracker.Account
-alias ExpenseTracker.Account.Expense
+  alias ExpenseTracker.Account
+  alias ExpenseTracker.Account.Expense
   use ExpenseTrackerWeb,:live_view
   
   @impl true
@@ -14,16 +13,15 @@ alias ExpenseTracker.Account.Expense
       </.header>
 
       <.form for={@form} id="expense-form" phx-change="validate" phx-submit="save">
-        <.input
+        <.input :if={@selected_category == nil}
           field={@form[:category_id]}
           type="select"
-          multiple
           label="Category"
           options={@category_opts}
         />
-        <.input field={@form[:date]} type="date" label="Date" />
-        <.input field={@form[:amount]} type="number" label="Amount" />
-        <.input field={@form[:notes]} type="text" label="Notes" />
+        <.input :if={@selected_category !== nil} field={@form[:date]} type="date" label="Date" />
+        <.input :if={@selected_category !== nil} field={@form[:amount]} type="number" label="Amount" />
+        <.input :if={@selected_category !== nil} field={@form[:notes]} type="text" label="Notes" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Expense</.button>
           <.button navigate={return_path(@return_to, @expense)}>Cancel</.button>
@@ -42,7 +40,7 @@ alias ExpenseTracker.Account.Expense
     {:ok,
      socket
      |> assign(:return_to, return_to(params["return_to"]))
-     |> assign(:category_opts, category_opts)
+     |> assign(:category_opts,[{"Select category",nil}] ++ category_opts)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -56,7 +54,7 @@ alias ExpenseTracker.Account.Expense
     socket
     |> assign(:page_title, "Edit Expense")
     |> assign(:expense, expense)
-    |> assign(selected_category: category)
+    |> assign(category_id: expense.category_id)
     |> assign(:form, to_form(Account.change_expense(expense,category)))
   end
 
@@ -73,14 +71,17 @@ alias ExpenseTracker.Account.Expense
   @impl true
   def handle_event("validate", %{"expense" => expense_params}, socket) do
 
-    expense_params = case Map.get(expense_params,"category_id") do
-      nil -> expense_params
-      [id] ->  %{expense_params|"category_id" =>String.to_integer(id)}
+    {socket,expense_params} = case Map.get(expense_params,"category_id") do
+      nil -> {socket,expense_params}
+      id ->  {assign(socket,selected_category: true),%{expense_params|"category_id" =>String.to_integer(id)}}
     end
 
     changeset = Account.change_expense(socket.assigns.expense,expense_params )
 
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+    {:noreply,
+      socket 
+      |>assign(form: to_form(changeset, action: :validate))
+      }
   end
 
   def handle_event("save", %{"expense" => expense_params}, socket) do
