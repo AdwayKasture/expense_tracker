@@ -6,6 +6,18 @@ Ok first thing i need to decide is the database schema
 
 * Expense(expense_id,date,amount,optional_notes,category)
 # Assumption here is that an expense can only belong to one category.
+# assumption we use same currency for expense as for its parent category
+
+* when adding expense  we must have date,amount ,category 
+    when we insert expense we must check that the amount + expense of last month is < budget 
+    
+    Adding more constraint on amount and monthly_budget must be > 0 and less than 10_000 (assumption)
 
 
+
+
+# TODO
+
+tests for expenses
+review ecto types, length validation on desc
 

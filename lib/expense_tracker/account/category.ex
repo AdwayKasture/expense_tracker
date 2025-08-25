@@ -10,6 +10,7 @@ defmodule ExpenseTracker.Account.Category do
     field :monthly_budget,:integer
     field :currency_offset,:integer,default: @currency_offset
     
+    timestamps()
   end
   
   def changeset(category,attrs) do
@@ -17,6 +18,7 @@ defmodule ExpenseTracker.Account.Category do
     |> cast(attrs,[:name,:description,:monthly_budget,:currency_offset])
     |> validate_required([:name,:monthly_budget])
     |> normalize_amount(:monthly_budget)
+    |> validate_number(:monthly_budget, greater_than: 0,less_than_or_equal_to: 1_000_000)
 
   end
 
