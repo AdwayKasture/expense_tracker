@@ -1,7 +1,6 @@
 defmodule ExpenseTrackerWeb.ExpenseLive.Show do
-alias ExpenseTracker.Account
-  use ExpenseTrackerWeb,:live_view
-
+  alias ExpenseTracker.Account
+  use ExpenseTrackerWeb, :live_view
 
   @impl true
   def render(assigns) do
@@ -22,7 +21,7 @@ alias ExpenseTracker.Account
 
       <.list>
         <:item title="Date">{@expense.date}</:item>
-        <:item title="Amount">{@expense.amount}</:item>
+        <:item title="Amount">{@expense.amount / 100}</:item>
         <:item title="Notes">{@expense.notes}</:item>
       </.list>
     </Layouts.app>
@@ -36,6 +35,4 @@ alias ExpenseTracker.Account
      |> assign(:page_title, "Show Expense")
      |> assign(:expense, Account.get_expense!(id))}
   end
-
-  
 end

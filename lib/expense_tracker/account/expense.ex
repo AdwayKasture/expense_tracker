@@ -10,66 +10,62 @@ defmodule ExpenseTracker.Account.Expense do
     field :date, :date
     field :amount, :integer
     field :notes, :string
-    
-    belongs_to :category, ExpenseTracker.Account.Category
-    
-    timestamps(type: :utc_datetime)
-  end  
 
-  def changeset(expense,attrs) do
+    belongs_to :category, ExpenseTracker.Account.Category
+
+    timestamps(type: :utc_datetime)
+  end
+
+  def changeset(expense, attrs) do
     expense
-    |> cast(attrs,[:amount,:date,:notes,:category_id])
-    |> validate_required([:amount,:date,:category_id])
-    |> validate_number(:amount, greater_than: 0,less_than_or_equal_to: 1_000_000)
+    |> cast(attrs, [:amount, :date, :notes, :category_id])
+    |> validate_required([:amount, :date, :category_id])
+    |> validate_number(:amount, greater_than: 0, less_than_or_equal_to: 1_000_000)
     |> validate_budget()
     |> foreign_key_constraint(:category_id)
   end
 
-  defp normalize_amount(changeset,field,offset) do
-    if not changed?(changeset,field) and not changed?(changeset,:category_id) do
-      changeset
-    else
-      case get_field(changeset,field) do
-        nil -> changeset
-        val -> put_change(changeset,field,offset * val)
-      end
+  defp validate_budget_constraint(changeset, cat) do
+    last_date = get_change(changeset, :date)
+    amt = get_change(changeset, :amount)
 
-    end
-  end
+    case {last_date, amt} do
+      {nil, _} ->
+        changeset
 
-  defp validate_budget_constraint(changeset,cat) do
-    changeset = normalize_amount(changeset,:amount,cat.currency_offset)
-    last_date = get_change(changeset,:date)
-    amt = get_change(changeset,:amount) 
-    case {last_date,amt} do
-      {nil,_} -> changeset
-      {_,nil} -> changeset
-      {last_date,amt} -> 
+      {_, nil} ->
+        changeset
+
+      {last_date, amt} ->
         start_date = Date.beginning_of_month(last_date)
-        query = from e in Expense,
-          where: e.category_id == ^cat.id and e.date >= ^start_date and e.date <= ^last_date,
-          select: sum(e.amount)
+
+        query =
+          from e in Expense,
+            where: e.category_id == ^cat.id and e.date >= ^start_date and e.date <= ^last_date,
+            select: sum(e.amount)
+
         total = Repo.one(query) || 0
 
         # TODO adjust amount with offset in error message
         if total + amt > cat.monthly_budget do
-          add_error(changeset,:amount,"Amount excedes budget by #{total + amt - cat.monthly_budget}")
+          add_error(
+            changeset,
+            :amount,
+            "Amount excedes budget by #{total + amt - cat.monthly_budget}"
+          )
         else
           changeset
         end
-
     end
-          
   end
-  
+
   defp validate_budget(changeset) do
-    category_id = get_change(changeset,:category_id)
+    category_id = get_change(changeset, :category_id)
+
     if category_id !== nil do
-      validate_budget_constraint(changeset,Account.get_category!(category_id))
+      validate_budget_constraint(changeset, Account.get_category!(category_id))
     else
       changeset
     end
   end
-
-  
 end

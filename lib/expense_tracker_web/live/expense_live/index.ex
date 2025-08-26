@@ -1,6 +1,6 @@
 defmodule ExpenseTrackerWeb.ExpenseLive.Index do
-alias ExpenseTracker.Account
-  use ExpenseTrackerWeb,:live_view 
+  alias ExpenseTracker.Account
+  use ExpenseTrackerWeb, :live_view
 
   @impl true
   def render(assigns) do
@@ -21,7 +21,7 @@ alias ExpenseTracker.Account
         row_click={fn {_id, expense} -> JS.navigate(~p"/expenses/#{expense}") end}
       >
         <:col :let={{_id, expense}} label="Date">{expense.date}</:col>
-        <:col :let={{_id, expense}} label="Amount">{expense.amount}</:col>
+        <:col :let={{_id, expense}} label="Amount">{expense.amount / 100}</:col>
         <:col :let={{_id, expense}} label="Notes">{expense.notes}</:col>
         <:action :let={{_id, expense}}>
           <div class="sr-only">
@@ -57,5 +57,4 @@ alias ExpenseTracker.Account
 
     {:noreply, stream_delete(socket, :expenses, expense)}
   end
-
 end

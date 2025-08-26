@@ -5,10 +5,5 @@ defmodule ExpenseTracker.ExpensesTest do
   import ExpenseTracker.CategoryFixture
 
   describe "expenses" do
-
-
-    
   end
-  
-  
 end

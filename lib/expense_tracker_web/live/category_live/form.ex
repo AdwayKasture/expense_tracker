@@ -1,8 +1,8 @@
 defmodule ExpenseTrackerWeb.CategoryLive.Form do
+  alias ExpenseTracker.Amount
   alias ExpenseTracker.Account.Category
   alias ExpenseTracker.Account
-  use ExpenseTrackerWeb,:live_view
-
+  use ExpenseTrackerWeb, :live_view
 
   @impl true
   def render(assigns) do
@@ -16,7 +16,7 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
       <.form for={@form} id="category-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
-        <.input field={@form[:monthly_budget]} type="number" label="Monthly budget" />
+        <.input field={@form[:monthly_budget]} type="text" label="Monthly budget" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Category</.button>
           <.button navigate={return_path(@return_to, @category)}>Cancel</.button>
@@ -57,7 +57,19 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
 
   @impl true
   def handle_event("validate", %{"category" => category_params}, socket) do
-    changeset = Account.change_category(socket.assigns.category, category_params)
+    params =
+      case Map.get(category_params, "monthly_budget") do
+        nil ->
+          category_params
+
+        v ->
+          case Float.parse(v) do
+            {v, _} -> %{category_params | "monthly_budget" => round(v * 100)}
+            _ -> category_params
+          end
+      end
+
+    changeset = Account.change_category(socket.assigns.category, params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -66,7 +78,13 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
   end
 
   defp save_category(socket, :edit, category_params) do
-    case Account.update_category(socket.assigns.category, category_params) do
+    params =
+      case Map.get(category_params, "monthly_budget") do
+        nil -> category_params
+        v -> %{category_params | "monthly_budget" => Amount.adjusted_amount(v)}
+      end
+
+    case Account.update_category(socket.assigns.category, params) do
       {:ok, category} ->
         {:noreply,
          socket
@@ -79,7 +97,13 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
   end
 
   defp save_category(socket, :new, category_params) do
-    case Account.create_category(category_params) do
+    params =
+      case Map.get(category_params, "monthly_budget") do
+        nil -> category_params
+        v -> %{category_params | "monthly_budget" => Amount.adjusted_amount(v)}
+      end
+
+    case Account.create_category(params) do
       {:ok, category} ->
         {:noreply,
          socket
@@ -93,6 +117,4 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
 
   defp return_path("index", _category), do: ~p"/categories"
   defp return_path("show", category), do: ~p"/categories/#{category}"
-
-
 end

@@ -1,12 +1,11 @@
 defmodule ExpenseTracker.Account do
-    @moduledoc """
+  @moduledoc """
   The ExpenseTracker.Account context.
   """
 
   import Ecto.Query, warn: false
   alias ExpenseTracker.Account.Category
   alias ExpenseTracker.Repo
-
 
   @doc """
   Returns the list of categories.
@@ -197,7 +196,4 @@ defmodule ExpenseTracker.Account do
   def change_expense(%Expense{} = expense, attrs \\ %{}) do
     Expense.changeset(expense, attrs)
   end
-
-
-
 end

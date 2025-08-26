@@ -1,7 +1,7 @@
 defmodule ExpenseTrackerWeb.CategoryLive.Index do
   alias ExpenseTracker.Account
-  use ExpenseTrackerWeb,:live_view
-    
+  use ExpenseTrackerWeb, :live_view
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -22,8 +22,9 @@ defmodule ExpenseTrackerWeb.CategoryLive.Index do
       >
         <:col :let={{_id, category}} label="Name">{category.name}</:col>
         <:col :let={{_id, category}} label="Description">{category.description}</:col>
-        <:col :let={{_id, category}} label="Monthly budget">{category.monthly_budget}</:col>
-        <:col :let={{_id, category}} label="Currency offset">{category.currency_offset}</:col>
+        <:col :let={{_id, category}} label="Monthly budget">
+          {category.monthly_budget / category.currency_offset}
+        </:col>
         <:action :let={{_id, category}}>
           <div class="sr-only">
             <.link navigate={~p"/categories/#{category}"}>Show</.link>
@@ -58,5 +59,4 @@ defmodule ExpenseTrackerWeb.CategoryLive.Index do
 
     {:noreply, stream_delete(socket, :categories, category)}
   end
- 
 end

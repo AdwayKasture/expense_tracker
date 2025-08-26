@@ -26,7 +26,6 @@ defmodule ExpenseTrackerWeb.Router do
     live "/expenses/new", ExpenseLive.Form, :new
     live "/expenses/:id", ExpenseLive.Show, :show
     live "/expenses/:id/edit", ExpenseLive.Form, :edit
-
   end
 
   # Other scopes may use custom stacks.

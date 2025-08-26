@@ -1,7 +1,6 @@
 defmodule ExpenseTrackerWeb.CategoryLive.Show do
-alias ExpenseTracker.Account
-  use ExpenseTrackerWeb,:live_view
-
+  alias ExpenseTracker.Account
+  use ExpenseTrackerWeb, :live_view
 
   @impl true
   def render(assigns) do
@@ -23,8 +22,7 @@ alias ExpenseTracker.Account
       <.list>
         <:item title="Name">{@category.name}</:item>
         <:item title="Description">{@category.description}</:item>
-        <:item title="Monthly budget">{@category.monthly_budget}</:item>
-        <:item title="Currency offset">{@category.currency_offset}</:item>
+        <:item title="Monthly budget">{@category.monthly_budget / @category.currency_offset}</:item>
       </.list>
     </Layouts.app>
     """
@@ -37,6 +35,4 @@ alias ExpenseTracker.Account
      |> assign(:page_title, "Show Category")
      |> assign(:category, Account.get_category!(id))}
   end
-
-
 end

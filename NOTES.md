@@ -19,6 +19,16 @@ Ok first thing i need to decide is the database schema
 # for real time update of list , we will use PubSub , where the liveview will listen to successful capture of expense and update the list accordingly
 
 
+
+
+-----------------------
+Lesson learnt :
+dont do complex logic in changeset
+only log related to changes in changeset 
+
+
+-----------------------
+
 # TODO
 
 tests for expenses
