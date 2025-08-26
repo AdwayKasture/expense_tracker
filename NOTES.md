@@ -19,17 +19,22 @@ Ok first thing i need to decide is the database schema
 # for real time update of list , we will use PubSub , where the liveview will listen to successful capture of expense and update the list accordingly
 
 
+When we are doing budget checks during insertion it must be atomic,
+# I am assuming that the repo.insert(changset) where changeset validates budget is atomic , incase its not we can wrap it in a repo.transact
 
+Next steps 
 
------------------------
-Lesson learnt :
-dont do complex logic in changeset
-only log related to changes in changeset 
+-> implement pubsub for remaining crud events
+-> keep track of used amount and available amount in liveview 
+-> when we get pubsub event modify it accordingly
+-> "Maybe" considering caching categories in an agent/ets table as there maynot be that many categories
+-> display progress bar using phx-hook and a UI widget
 
-
------------------------
 
 # TODO
+
+
+send pubsub for updates and deletes
 
 tests for expenses
 review ecto types, length validation on desc

@@ -6,6 +6,8 @@ defmodule ExpenseTracker.Account.Expense do
   import Ecto.Changeset
   import Ecto.Query
 
+  @broadcast_topic "expenses"
+
   schema "expenses" do
     field :date, :date
     field :amount, :integer
@@ -39,11 +41,8 @@ defmodule ExpenseTracker.Account.Expense do
       {last_date, amt} ->
         start_date = Date.beginning_of_month(last_date)
 
-        query =
-          from e in Expense,
-            where: e.category_id == ^cat.id and e.date >= ^start_date and e.date <= ^last_date,
-            select: sum(e.amount)
-
+        query = get_monthly_expense(cat.id,start_date,last_date)
+          
         total = Repo.one(query) || 0
 
         # TODO adjust amount with offset in error message
@@ -68,4 +67,12 @@ defmodule ExpenseTracker.Account.Expense do
       changeset
     end
   end
+
+  def get_monthly_expense(category_id,start_date,end_date) do
+    from e in Expense,
+            where: e.category_id == ^category_id and e.date >= ^start_date and e.date <= ^end_date,
+            select: sum(e.amount)
+  end
+
+  def get_topic(),do: @broadcast_topic
 end

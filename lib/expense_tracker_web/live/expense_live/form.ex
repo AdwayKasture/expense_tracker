@@ -51,13 +51,12 @@ defmodule ExpenseTrackerWeb.ExpenseLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     expense = Account.get_expense!(id)
-    category = Account.get_category!(expense.category_id)
-
+    expense = %{expense|amount: expense.amount /100}
     socket
     |> assign(:page_title, "Edit Expense")
     |> assign(:expense, expense)
-    |> assign(category_id: expense.category_id)
-    |> assign(:form, to_form(Account.change_expense(expense, category)))
+    |> assign(selected_category: expense.category_id)
+    |> assign(:form, to_form(Account.change_expense(expense)))
   end
 
   defp apply_action(socket, :new, _params) do

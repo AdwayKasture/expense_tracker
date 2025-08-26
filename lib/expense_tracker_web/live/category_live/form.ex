@@ -39,7 +39,7 @@ defmodule ExpenseTrackerWeb.CategoryLive.Form do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     category = Account.get_category!(id)
-
+    category = %{category|monthly_budget: category.monthly_budget / 100}
     socket
     |> assign(:page_title, "Edit Category")
     |> assign(:category, category)

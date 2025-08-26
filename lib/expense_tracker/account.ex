@@ -4,6 +4,7 @@ defmodule ExpenseTracker.Account do
   """
 
   import Ecto.Query, warn: false
+  alias Phoenix.PubSub
   alias ExpenseTracker.Account.Category
   alias ExpenseTracker.Repo
 
@@ -146,8 +147,15 @@ defmodule ExpenseTracker.Account do
   """
   def create_expense(attrs) do
     %Expense{}
-    |> Expense.changeset(attrs)
-    |> Repo.insert()
+      |> Expense.changeset(attrs)
+      |> Repo.insert()
+      |> case do
+        {:ok,expense} -> 
+          PubSub.broadcast(ExpenseTracker.PubSub,Expense.get_topic(),{:new,expense})
+          {:ok,expense}
+      {:error,changeset} -> {:error,changeset}
+           
+      end
   end
 
   @doc """

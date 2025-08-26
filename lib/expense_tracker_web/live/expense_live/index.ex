@@ -1,4 +1,6 @@
 defmodule ExpenseTrackerWeb.ExpenseLive.Index do
+  alias Phoenix.LiveView
+  alias ExpenseTracker.Account.Expense
   alias ExpenseTracker.Account
   use ExpenseTrackerWeb, :live_view
 
@@ -44,11 +46,24 @@ defmodule ExpenseTrackerWeb.ExpenseLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+
+    if connected?(socket), do: Phoenix.PubSub.subscribe(ExpenseTracker.PubSub,Expense.get_topic())
+      
+
     {:ok,
      socket
      |> assign(:page_title, "Listing Expenses")
      |> stream(:expenses, Account.list_expenses())}
   end
+
+  @impl LiveView
+  def handle_info({:new,expense}, socket) do
+    socket
+    |> stream_insert(:expenses,expense,at: :head)
+    |> noreply()
+  end
+
+  defp noreply(data),do: {:noreply,data}
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
