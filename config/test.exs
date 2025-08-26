@@ -7,7 +7,7 @@ import Config
 # Run `mix help test` for more information.
 config :expense_tracker, ExpenseTracker.Repo,
   username: "postgres",
-  password: "password",
+  password: "postgres",
   hostname: "localhost",
   database: "expense_tracker_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
